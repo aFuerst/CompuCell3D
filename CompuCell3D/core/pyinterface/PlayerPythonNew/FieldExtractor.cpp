@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include <chrono>
 #include <vtkPythonUtil.h>
 
 using namespace std;
@@ -64,7 +65,7 @@ void FieldExtractor::extractCellField(){
 }
 
 void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _plane, int _pos){
-
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 
 	Field3D<CellG*> * cellFieldG=potts->getCellFieldG();
@@ -116,10 +117,13 @@ void FieldExtractor::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, 
 			_cellTypeArray->InsertValue(offset, type);
 			++offset;
 		}
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillCellFieldData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 }
 
 void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos) {
-
+  auto start_time = std::chrono::high_resolution_clock::now();
     vtkIntArray *_cellTypeArray = (vtkIntArray *)_cellTypeArrayAddr;
     vtkPoints *_pointsArray = (vtkPoints *)_pointsArrayAddr;
     vtkCellArray * _cellsArray = (vtkCellArray*)_cellsArrayAddr;
@@ -190,11 +194,14 @@ void FieldExtractor::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeAr
             ++offset;
         }
     
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillCellFieldData2DCartesian !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
 
 }
 
 
 void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
 	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
@@ -267,9 +274,14 @@ void FieldExtractor::fillCellFieldData2DHex(vtk_obj_addr_int_t _cellTypeArrayAdd
 
 			++offset;
 		}
+
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillCellFieldData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 }
 
 void FieldExtractor::fillCellFieldData2DHex_old(vtk_obj_addr_int_t _cellTypeArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkIntArray *_cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
 
@@ -332,7 +344,7 @@ void FieldExtractor::fillCellFieldData2DHex_old(vtk_obj_addr_int_t _cellTypeArra
 }
 
 void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
-
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr; 
 
@@ -437,11 +449,15 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_ob
 				}
 			}
 		}
+
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillBorderData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 }
 
 void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
     //this function can be shortened but for now I am leaving it the way it is
-
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr; 
 
@@ -866,10 +882,14 @@ void FieldExtractor::fillBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk
             
             
 		}
+
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillBorderData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 }
 
 void FieldExtractor::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
-        
+  auto start_time = std::chrono::high_resolution_clock::now();        
 
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines=(vtkCellArray *)_linesArrayAddr;
@@ -982,9 +1002,14 @@ void FieldExtractor::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr 
 			}
 		}
 	}
+
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillClusterBorderData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 }
 
 void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
     //this function has to be redone in the same spirit as fillBorderData2DHex
 	vtkPoints *points = (vtkPoints *)_pointArrayAddr;
 	vtkCellArray * lines = (vtkCellArray *)_linesArrayAddr;
@@ -1414,9 +1439,14 @@ void FieldExtractor::fillClusterBorderData2DHex(vtk_obj_addr_int_t _pointArrayAd
             
             
 		}
+
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillClusterBorderData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 }
 
 void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_obj_addr_int_t _linesArrayAddr, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 //	cerr << "FieldExtractor::fillCentroidData2D============    numCells="<< potts->getNumCells() <<endl;
 	CellInventory *cellInventoryPtr = &potts->getCellInventory();
 	CellInventory::cellInventoryIterator cInvItr;
@@ -1456,9 +1486,13 @@ void FieldExtractor::fillCentroidData2D(vtk_obj_addr_int_t _pointArrayAddr ,vtk_
 		lines->InsertCellPoint(ptCount);  ptCount++;
 		lines->InsertCellPoint(ptCount-4);
 	}
+      auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillCentroidData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 }
 
 bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 
     vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
@@ -1535,10 +1569,14 @@ bool FieldExtractor::fillConFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_
 			conArray->InsertNextValue( con);
 		}
 		return true;
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillConFieldData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 }
 
 bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
-
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
@@ -1614,12 +1652,15 @@ bool FieldExtractor::fillConFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAdd
 			conArray->InsertNextValue( con);
 			++offset;
 		}
-        
-		return true;
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillConFieldData2DCartesian !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+  return true;
 }
 
 
 bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
@@ -1691,10 +1732,13 @@ bool FieldExtractor::fillScalarFieldData2DHex(vtk_obj_addr_int_t _conArrayAddr,v
 			++offset;
 		}
         
-		return true;
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillScalarFieldData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+  return true;
 }
 
 bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
@@ -1768,6 +1812,8 @@ bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArray
 			++offset;
 		}
         
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillScalarFieldData2DCartesian !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
 		return true;
 }
 
@@ -1775,6 +1821,7 @@ bool FieldExtractor::fillScalarFieldData2DCartesian(vtk_obj_addr_int_t _conArray
 
 
 bool FieldExtractor::fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _hexCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkCellArray * _hexCellsArray=(vtkCellArray*)_hexCellsArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
@@ -1854,11 +1901,15 @@ bool FieldExtractor::fillScalarFieldCellLevelData2DHex(vtk_obj_addr_int_t _conAr
 
 			++offset;
 		}
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillScalarFieldCellLevelData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 		return true;
 }
 
 
 bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t _conArrayAddr,vtk_obj_addr_int_t _cartesianCellsArrayAddr ,vtk_obj_addr_int_t _pointsArrayAddr , std::string _conFieldName , std::string _plane ,int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkCellArray * _cartesianCellsArray=(vtkCellArray*)_cartesianCellsArrayAddr;
 	vtkPoints *_pointsArray=(vtkPoints *)_pointsArrayAddr;
@@ -1941,11 +1992,15 @@ bool FieldExtractor::fillScalarFieldCellLevelData2DCartesian(vtk_obj_addr_int_t 
 			conArray->InsertNextValue( con);
 			++offset;
 		}
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillScalarFieldCellLevelData2DCartesian !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 		return true;
 }
 
 
 bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	Field3D<float> *conFieldPtr=0; 
 	std::map<std::string,Field3D<float>*> & fieldMap=sim->getConcentrationFieldNameMap();
@@ -2009,10 +2064,14 @@ bool FieldExtractor::fillConFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::st
 			conArray->SetValue(offset, con);
 			++offset;
 		}
+    auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillConFieldData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 		return true;
 }
 
 bool FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName); 
 
@@ -2069,10 +2128,15 @@ bool FieldExtractor::fillScalarFieldData2D(vtk_obj_addr_int_t _conArrayAddr,std:
 			conArray->SetValue(offset, con);
 			++offset;
 		}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillScalarFieldData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 		return true;
 }
 
 bool FieldExtractor::fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArrayAddr,std::string _conFieldName, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName); 
 
@@ -2141,10 +2205,15 @@ bool FieldExtractor::fillScalarFieldCellLevelData2D(vtk_obj_addr_int_t _conArray
 			conArray->SetValue(offset, con);
 			++offset;
 		}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillScalarFieldCellLevelData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 		return true;
 }
 
 bool FieldExtractor::fillVectorFieldData2D(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkFloatArray * vectorArray=(vtkFloatArray *)_vectorArrayIntAddr;
 	vtkPoints *pointsArray=(vtkPoints *)_pointsArrayIntAddr;
 
@@ -2209,10 +2278,15 @@ bool FieldExtractor::fillVectorFieldData2D(vtk_obj_addr_int_t _pointsArrayIntAdd
 				++offset;
 			}
 		}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillVectorFieldData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 		return true;
 }
 
 bool FieldExtractor::fillVectorFieldData2DHex(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkFloatArray * vectorArray=(vtkFloatArray *)_vectorArrayIntAddr;
 	vtkPoints *pointsArray=(vtkPoints *)_pointsArrayIntAddr;
 
@@ -2276,11 +2350,15 @@ bool FieldExtractor::fillVectorFieldData2DHex(vtk_obj_addr_int_t _pointsArrayInt
 				++offset;
 			}
 		}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillVectorFieldData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 		return true;
 }
 
 bool FieldExtractor::fillVectorFieldData3D(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName){
-
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkFloatArray * vectorArray=(vtkFloatArray *)_vectorArrayIntAddr;
 	vtkPoints *pointsArray=(vtkPoints *)_pointsArrayIntAddr;
 
@@ -2313,12 +2391,16 @@ bool FieldExtractor::fillVectorFieldData3D(vtk_obj_addr_int_t _pointsArrayIntAdd
 					++offset;
 				}
 			}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillVectorFieldData3D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 			return true;
 }
 
 
 bool FieldExtractor::fillVectorFieldData3DHex(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName) {
-
+  auto start_time = std::chrono::high_resolution_clock::now();
     vtkFloatArray * vectorArray = (vtkFloatArray *)_vectorArrayIntAddr;
     vtkPoints *pointsArray = (vtkPoints *)_pointsArrayIntAddr;
 
@@ -2352,11 +2434,16 @@ bool FieldExtractor::fillVectorFieldData3DHex(vtk_obj_addr_int_t _pointsArrayInt
                     ++offset;
                 }
             }
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillVectorFieldData3DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
     return true;
 }
 
 
 bool FieldExtractor::fillVectorFieldCellLevelData2D(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkFloatArray * vectorArray=(vtkFloatArray *)_vectorArrayIntAddr;
 	vtkPoints *pointsArray=(vtkPoints *)_pointsArrayIntAddr;
 
@@ -2426,10 +2513,15 @@ bool FieldExtractor::fillVectorFieldCellLevelData2D(vtk_obj_addr_int_t _pointsAr
 			}
 
 		}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillVectorFieldCellLevelData2D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 		return true;
 }
 
 bool FieldExtractor::fillVectorFieldCellLevelData2DHex(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName, std::string _plane ,  int _pos){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkFloatArray * vectorArray=(vtkFloatArray *)_vectorArrayIntAddr;
 	vtkPoints *pointsArray=(vtkPoints *)_pointsArrayIntAddr;
 
@@ -2498,10 +2590,15 @@ bool FieldExtractor::fillVectorFieldCellLevelData2DHex(vtk_obj_addr_int_t _point
 				}
 			}
 		}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillVectorFieldCellLevelData2DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 		return true;
 }
 
 bool FieldExtractor::fillVectorFieldCellLevelData3D(vtk_obj_addr_int_t _pointsArrayIntAddr,vtk_obj_addr_int_t _vectorArrayIntAddr,std::string _fieldName){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkFloatArray * vectorArray=(vtkFloatArray *)_vectorArrayIntAddr;
 	vtkPoints *pointsArray=(vtkPoints *)_pointsArrayIntAddr;
 
@@ -2544,11 +2641,15 @@ bool FieldExtractor::fillVectorFieldCellLevelData3D(vtk_obj_addr_int_t _pointsAr
 					}
 				}			
 			}
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillVectorFieldCellLevelData3D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 			return true;
 }
 
 
 bool FieldExtractor::fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _pointsArrayIntAddr, vtk_obj_addr_int_t _vectorArrayIntAddr, std::string _fieldName) {
+  auto start_time = std::chrono::high_resolution_clock::now();
     vtkFloatArray * vectorArray = (vtkFloatArray *)_vectorArrayIntAddr;
     vtkPoints *pointsArray = (vtkPoints *)_pointsArrayIntAddr;
 
@@ -2593,11 +2694,16 @@ bool FieldExtractor::fillVectorFieldCellLevelData3DHex(vtk_obj_addr_int_t _point
                     }
                 }
             }
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillVectorFieldCellLevelData3DHex !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
     return true;
 }
 
 
 vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr, bool extractOuterShellOnly){
+  auto start_time = std::chrono::high_resolution_clock::now();
 	set<int> usedCellTypes;
 	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	vtkLongArray *cellIdArray=(vtkLongArray *)_cellIdArrayAddr;
@@ -2695,11 +2801,16 @@ vector<int> FieldExtractor::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArra
                     }
 				}
 			}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillCellFieldData3D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 			return vector<int>(usedCellTypes.begin(),usedCellTypes.end());
 }
 
 bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
-	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
+	  auto start_time = std::chrono::high_resolution_clock::now();
+  vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 
 	Field3D<float> *conFieldPtr=0; 
@@ -2759,11 +2870,15 @@ bool FieldExtractor::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_ob
 					++offset;
 				}
 			}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillConFieldData3D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 			return true;
 }
 // rwh: leave this function in until we determine we really don't want to add a boundary layer
 bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
-
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	FieldStorage::floatField3D_t * conFieldPtr=fsPtr->getScalarFieldByName(_conFieldName);
@@ -2818,6 +2933,10 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk
 					++offset;
 				}
 			}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillScalarFieldData3D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 			return true;
 }
 
@@ -2876,7 +2995,7 @@ bool FieldExtractor::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk
 //}
 
 bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArrayAddr ,vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName,std::vector<int> * _typesInvisibeVec){
-
+  auto start_time = std::chrono::high_resolution_clock::now();
 	vtkDoubleArray *conArray=(vtkDoubleArray *)_conArrayAddr;
 	vtkIntArray *cellTypeArray=(vtkIntArray *)_cellTypeArrayAddr;
 	FieldStorage::scalarFieldCellLevel_t * conFieldPtr=fsPtr->getScalarFieldCellLevelFieldByName(_conFieldName); 
@@ -2936,6 +3055,10 @@ bool FieldExtractor::fillScalarFieldCellLevelData3D(vtk_obj_addr_int_t _conArray
 					++offset;
 				}
 			}
+
+  auto current_time = std::chrono::high_resolution_clock::now();
+  cout<<"!!EXITING fillScalarFieldCellLevelData3D !! "<< std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano-seconds elapsed" << endl;
+
 			return true;
 }
 
