@@ -476,10 +476,20 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
   dim[1] = fieldDimVec[dimOrderVec[1]];
   dim[2] = fieldDimVec[dimOrderVec[2]];
 
-  vector<std::tuple<double, double, double, double>> global_points;
+  // vector<std::tuple<double, double, double, double>> global_points;
   vtkIdType *linesWritePtr;
-#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
+  size_t *counts, *startPositions;
+  int numThreads, threadNum, numPoints;
+
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, counts, startPositions, numThreads, numPoints) private(threadNum, linesWritePtr)
   {
+    #pragma omp single
+    {
+      numThreads = omp_get_num_threads();
+      counts = new size_t[numThreads];
+      startPositions = new size_t[numThreads];
+    }
+    threadNum = omp_get_thread_num();
     vector<std::tuple<double, double, double, double>> local_points;
 #pragma omp for schedule(static) nowait
     for (int i = 0; i < dim[0]; ++i)
@@ -559,41 +569,107 @@ void FieldExtractor::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_ob
         }
       }
     }
+
+// #pragma omp critical
+//     {
+//       cout << "threadNum: " << threadNum << " points: " << local_points.size() << endl;
+//     }
+
+    counts[threadNum] = local_points.size();
+
+    //     size_t newSize;
+    //     size_t allocStart;
+    // #pragma omp critical
+    //     {
+    //       allocStart = global_points.size();
+    //       newSize = allocStart + local_points.size();
+    //       global_points.resize(newSize);
+    //     }
+    // #pragma omp critical
+    //     {
+    //       // https://stackoverflow.com/a/18671256
+    //       // we can force these to be added in-order if we want
+    //       global_points.insert(global_points.end(), local_points.begin(), local_points.end());
+    //     }
+    // std::copy(local_points.begin(), local_points.end(), global_points.begin() + allocStart);
+
+// #pragma omp barrier
+
+// #pragma omp single
+//     {
+//       // numPoints = counts[0];
+//       startPositions[0] = 0;
+//       for (int i = 1; i < numThreads; ++i)
+//       {
+//         // numPoints += counts[i];
+//         startPositions[i] = startPositions[i - 1] + counts[i - 1];
+//         // cout << "startPositions i: " << i << " = " << startPositions[i] << " counts i = " << counts[i] << endl;
+//       }
+//       // cout << "!!num points: " << numPoints << " numThreads: " << numThreads << endl;
+//       // linesWritePtr = lines->WritePointer(numPoints, numPoints * 3);
+//       // points->SetNumberOfPoints(numPoints * 2);
+//     }
+// #pragma omp barrier
+// #pragma omp sections
+//     {
+// #pragma omp section
+//       {
+//         linesWritePtr = lines->WritePointer(numPoints, numPoints * 3);
+//       }
+// #pragma omp section
+//       {
+//         points->SetNumberOfPoints(numPoints * 2);
+//       }
+// #pragma omp section
+// {
+//   startPositions[0] = 0;
+//   for (int i = 1; i < numThreads; ++i)
+//   {
+//     // numPoints += counts[i];
+//     startPositions[i] = startPositions[i - 1] + counts[i - 1];
+//     // cout << "startPositions i: " << i << " = " << startPositions[i] << " counts i = " << counts[i] << endl;
+//   }
+// }
+//     }
+
+    int pc, pt_pos = 0, startPosition;
+// #pragma omp for schedule(static)
+// #pragma omp critical
+// {
+  if (local_points.size() > 0)
+  {
+
 #pragma omp critical
     {
-      // https://stackoverflow.com/a/18671256
-      // we can force these to be added in-order if we want
-      global_points.insert(global_points.end(), local_points.begin(), local_points.end());
+        cout << "!!threadNum: " << threadNum << endl;
+        numPoints += local_points.size();
+        startPosition = numPoints;
+        linesWritePtr = lines->WritePointer(numPoints, numPoints * 3);
+        points->SetNumberOfPoints(numPoints * 2);
     }
+  }
 
-#pragma omp barrier
-
-#pragma omp sections
+    for (size_t j = 0; j < local_points.size(); ++j)
     {
-#pragma omp section
-      {
-        linesWritePtr = lines->WritePointer(global_points.size(), global_points.size() * 3);
-      }
-#pragma omp section
-      {
-        points->SetNumberOfPoints(global_points.size()*2);
-      }
-    }
+      // size_t local_j = j + startPositions[threadNum];
+      std::tuple<double, double, double, double> pt = local_points[j];
+      pt_pos = (startPosition + j) * 2;
+      pc = (startPosition + j) * 3;
+      // #pragma omp critical
+      //       {
+      // cout << "!!threadNum: " << threadNum << " j: " << j << " startPositions:" << startPositions[threadNum] << " pc:" << pc << " pt_pos:" << pt_pos << endl;
+      // }
 
-    int pc, pt_pos = 0;
-#pragma omp for schedule(static)
-    for (int j = 0; j < global_points.size(); ++j)
-    {
-      std::tuple<double, double, double, double> pt = global_points[j];
-      pt_pos = j*2;
       points->SetPoint(pt_pos, std::get<0>(pt), std::get<1>(pt), 0);
       points->SetPoint(pt_pos + 1, std::get<2>(pt), std::get<3>(pt), 0);
-      pc = j * 3;
       linesWritePtr[pc] = 2;
       linesWritePtr[pc + 1] = pt_pos;
       linesWritePtr[pc + 2] = pt_pos + 1;
     }
+// }
   }
+  delete counts;
+  delete startPositions;
   auto current_time = std::chrono::high_resolution_clock::now();
   // cout << "points->GetNumberOfPoints " << points->GetNumberOfPoints() << " lines->GetNumberOfCells " << lines->GetNumberOfCells() << endl;
   cout << "!!EXITING fillBorderData2D !! " << std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - start_time).count() << " nano~seconds elapsed" << endl;
