@@ -1,11 +1,23 @@
 MESSAGE(NUMPY_INCLUDE_DIR ${NUMPY_INCLUDE_DIR})
 
+FIND_PACKAGE(CUDA)
+FIND_PACKAGE(CUDAToolkit)
+INCLUDE(FindCUDA)
+MESSAGE(" CUDA TOOLKIT FOUND " ${CUDA_TOOLKIT_INCLUDE})
+MESSAGE(STATUS "CUDA headers found at " ${CUDA_INCLUDE_DIRS})
+MESSAGE(STATUS "CUDA library: " ${CUDA_LIBRARIES})
+MESSAGE(" CUDA NVCC exe " ${CUDA_NVCC_EXECUTABLE})
+
+INCLUDE_DIRECTORIES(${CUDA_TOOLKIT_INCLUDE})
+MESSAGE("CUDA_TOOLKIT_INCLUDE: " ${CUDA_NVCC_EXECUTABLE})
+
 SET(SRCS
    FieldStorage.cpp
    FieldExtractorBase.cpp
    FieldExtractor.cpp
    FieldExtractorCML.cpp
    FieldWriter.cpp
+   FieldExtractor_CUDA.cu
 )
 
 if (${VTK_MAJOR_VERSION} EQUAL "6")
@@ -36,16 +48,17 @@ SET(LIBS
 )
 
 MESSAGE("VTK_LIB_DIRS " ${VTK_LIBRARY_DIRS})
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    ADD_LIBRARY(FieldExtractor SHARED ${SRCS})
+    CUDA_ADD_LIBRARY(FieldExtractor SHARED ${SRCS})
 
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
-    ADD_LIBRARY(FieldExtractor ${SRCS})
+    CUDA_ADD_LIBRARY(FieldExtractor ${SRCS})
     set_target_properties(FieldExtractor PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    ADD_LIBRARY(FieldExtractor ${SRCS})
+    CUDA_ADD_LIBRARY(FieldExtractor ${SRCS})
 
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
@@ -57,7 +70,7 @@ TARGET_INCLUDE_DIRECTORIES(FieldExtractor PUBLIC
 )
 target_link_libraries(FieldExtractor ${LIBS})
 
-install(TARGETS FieldExtractor
+install(TARGETS FieldExtractor 
         EXPORT FieldExtractor
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib

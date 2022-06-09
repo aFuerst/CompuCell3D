@@ -46,6 +46,7 @@ namespace CompuCell3D{
 #include <FieldExtractorBase.h>
 #include <FieldExtractor.h>
 #include <FieldExtractorCML.h>
+#include <FieldExtractor_CUDA.cuh>
 #include <FieldWriter.h>
 #include <vtkIntArray.h>
     
@@ -201,6 +202,7 @@ class CellG;
 %include <FieldExtractorBase.h>
 %include <FieldExtractor.h>
 %include <FieldExtractorCML.h>
+%include <FieldExtractor_CUDA.cuh>
 %include <FieldWriter.h>
 
 
