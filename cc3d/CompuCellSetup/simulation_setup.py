@@ -281,7 +281,7 @@ def initialize_field_extractor_objects():
     dim = sim.getPotts().getCellFieldG().getDim()
 
     field_storage = PlayerPython.FieldStorage()
-    field_extractor = PlayerPython.FieldExtractor()
+    field_extractor = PlayerPython.FieldExtractor_CUDA()
     field_extractor.setFieldStorage(field_storage)
 
     persistent_globals.persistent_holder['field_storage'] = field_storage

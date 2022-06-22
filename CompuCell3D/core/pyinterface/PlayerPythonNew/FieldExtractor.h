@@ -45,10 +45,10 @@ namespace CompuCell3D{
 		FieldExtractor();
 		~FieldExtractor();
 
-		void setFieldStorage(FieldStorage * _fsPtr){fsPtr=_fsPtr;}
-		FieldStorage * getFieldStorage(FieldStorage * _fsPtr){return fsPtr;}
+		virtual void setFieldStorage(FieldStorage * _fsPtr){fsPtr=_fsPtr;}
+    virtual FieldStorage *getFieldStorage(FieldStorage *_fsPtr) { return fsPtr; }
 
-		void extractCellField();
+    void extractCellField();
 
 		virtual void fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr , std::string _plane ,  int _pos);
         virtual void fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos);
@@ -100,7 +100,7 @@ namespace CompuCell3D{
 
 		int * produceArray(int _size);
 		void init(Simulator * _sim);
-	private:
+	protected:
 		FieldStorage * fsPtr;
 	};
 };
