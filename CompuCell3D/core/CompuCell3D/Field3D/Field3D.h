@@ -5,7 +5,7 @@
 // It would be better to hide the implementation (i.e. not include it here),
 // but createInstance needs it and because Field3D is templated 
 // createInstance must be in the header file.
-#include "Field3DImpl.h"
+#include "Field3DImpl.cuh"
 #include "Point3D.h"
 #include "Dim3D.h"
 

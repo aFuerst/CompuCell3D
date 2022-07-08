@@ -5,7 +5,7 @@
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
 #include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/Field3DImpl.h>
+#include <CompuCell3D/Field3D/Field3DImpl.cuh>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/Field3D/Field3DChangeWatcher.h>
 #include <CompuCell3D/Field3D/Neighbor.h>

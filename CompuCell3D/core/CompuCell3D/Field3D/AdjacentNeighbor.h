@@ -10,9 +10,9 @@
 */
 /// This class will cache offsets of a given lattice site that will lead to adjacent lattice points
 /// you will have to use getByOffset function from Field3D class to access lattice points
-/// Notice that offsets may be negative as well. getByIndex from Field3DImpl.h will return
+/// Notice that offsets may be negative as well. getByIndex from Field3DImpl.cuh will return
 /// default value of the field element if the array index is out range (i.e negative or greater than internal field array len
-/// see Field3DImpl.h for the details).
+/// see Field3DImpl.cuh for the details).
 /// Example: let's say a given point has field array index 20. To access its adjacent neighbors
 /// you add 20+neighbor_offset and call getByIndex(20+neighbor_offset)
 /// adjFace2FaceNeighborOffsets stores offsets of a neighboring cells that touch a given cell face to face and not just by corner or edge

@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "Field3DImpl.h"
+#include "Field3DImpl.cuh"
 #include "Field3DChangeWatcher.h"
 
 #include <CompuCell3D/CC3DExceptions.h>

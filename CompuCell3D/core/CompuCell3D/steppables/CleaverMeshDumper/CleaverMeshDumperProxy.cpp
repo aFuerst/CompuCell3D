@@ -5,8 +5,8 @@
 
 using namespace CompuCell3D;
 
-auto cleaverMeshDumperProxy = registerPlugin<Steppable, CleaverMeshDumper>(
-        "CleaverMeshDumper",
-        "Dumps Cleaver Mesh",
-        &Simulator::steppableManager
-);
+// auto cleaverMeshDumperProxy = registerPlugin<Steppable, CleaverMeshDumper>(
+//         "CleaverMeshDumper",
+//         "Dumps Cleaver Mesh",
+//         &Simulator::steppableManager
+// );

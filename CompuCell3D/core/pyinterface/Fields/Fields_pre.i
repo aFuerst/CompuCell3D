@@ -4,7 +4,7 @@
 // #include <CompuCell3D/Field3D/Point3D.h>
 // #include <CompuCell3D/Field3D/Dim3D.h>
 // #include <CompuCell3D/Field3D/Field3D.h>
-// #include <CompuCell3D/Field3D/Field3DImpl.h>
+// #include <CompuCell3D/Field3D/Field3DImpl.cuh>
 
 // Namespaces
 using namespace std;

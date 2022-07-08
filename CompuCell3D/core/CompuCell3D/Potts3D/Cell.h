@@ -4,6 +4,7 @@
 #include <vector>
 #include <CompuCell3D/DerivedProperty.h>
 #include <CompuCell3D/ExtraMembers.h>
+#include <CompuCell3D/CudaUtils/CudaManagedClass.cuh>
 
 #ifndef PyObject_HEAD
 struct _object; //forward declare
@@ -16,7 +17,7 @@ namespace CompuCell3D {
      * A Potts3D cell.
      */
 
-    class CellG {
+    class CellG : CudaManaged {
     public:
         typedef unsigned char CellType_t;
 
@@ -75,9 +76,7 @@ namespace CompuCell3D {
         DerivedProperty<CellG, float, &CellG::getSurfaceTension> surfaceTension;
         // Cluster surface tension
         DerivedProperty<CellG, float, &CellG::getClusterSurfaceTension> clusterSurfaceTension;
-
     };
-
 
     class Cell {
     };

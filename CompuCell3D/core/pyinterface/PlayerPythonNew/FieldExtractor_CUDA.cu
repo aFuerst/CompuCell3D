@@ -2,7 +2,8 @@
 #include <CompuCell3D/Simulator.h>
 #include "FieldExtractor_CUDA.cuh"
 #include "FieldExtractor.h"
-#include <CompuCell3D/steppables/PDESolvers/CUDA/CUDAUtilsHeader.h>
+// #include <CompuCell3D/steppables/PDESolvers/CUDA/CUDAUtilsHeader.h>
+#include <CompuCell3D/CudaUtils/CudaUtils.h>
 #include <cuda.h>
 #include "FieldStorage.h"
 
@@ -159,18 +160,18 @@ float* FieldExtractor_CUDA::moveConFieldToDevice(std::string _conFieldName) {
 void FieldExtractor_CUDA::fillCellFieldData2D(vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _plane, int _pos)
 {
   cout << "FieldExtractor_CUDA fillCellFieldData2D" << endl;
-  FieldExtractor::fillCellFieldData2D(_cellTypeArrayAddr,_plane, _pos);
+  // FieldExtractor::fillCellFieldData2D(_cellTypeArrayAddr, _plane, _pos);
 }
 
 void FieldExtractor_CUDA::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellsArrayAddr, vtk_obj_addr_int_t _pointsArrayAddr, std::string _plane, int _pos) {
   cout << "FieldExtractor_CUDA fillCellFieldData2DCartesian" << endl;
-  FieldExtractor::fillCellFieldData2DCartesian(_cellTypeArrayAddr, _cellsArrayAddr, _pointsArrayAddr, _plane, _pos);
+  // FieldExtractor::fillCellFieldData2DCartesian(_cellTypeArrayAddr, _cellsArrayAddr, _pointsArrayAddr, _plane, _pos);
 }
 
 void FieldExtractor_CUDA::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
 {
   cout << "FieldExtractor_CUDA fillBorderData2D" << endl;
-  FieldExtractor::fillBorderData2D(_pointArrayAddr, _linesArrayAddr, _plane, _pos);
+  // FieldExtractor::fillBorderData2D(_pointArrayAddr, _linesArrayAddr, _plane, _pos);
 }
 
 void FieldExtractor_CUDA::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
@@ -260,8 +261,9 @@ bool FieldExtractor_CUDA::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr
 std::vector<int> FieldExtractor_CUDA::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr, bool extractOuterShellOnly)
 {
   cout << "FieldExtractor_CUDA fillCellFieldData3D" << endl;
-  auto ret = FieldExtractor::fillCellFieldData3D(_cellTypeArrayAddr, _cellIdArrayAddr, extractOuterShellOnly);
-  cout << "DONE FieldExtractor_CUDA fillCellFieldData3D" << endl;
+  // auto ret = FieldExtractor::fillCellFieldData3D(_cellTypeArrayAddr, _cellIdArrayAddr, extractOuterShellOnly);
+  // cout << "DONE FieldExtractor_CUDA fillCellFieldData3D" << endl;
+  auto ret = std::vector<int>();
   return ret;
 }
 bool FieldExtractor_CUDA::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName, std::vector<int> *_typesInvisibeVec)

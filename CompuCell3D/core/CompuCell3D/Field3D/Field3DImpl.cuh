@@ -7,7 +7,8 @@
 
 #include "Dim3D.h"
 #include "Field3D.h"
-
+#include <CompuCell3D/steppables/PDESolvers/CUDA/CUDAUtilsHeader.h>
+#include <cuda.h>
 
 namespace CompuCell3D {
 //indexing macro
@@ -45,14 +46,16 @@ namespace CompuCell3D {
 
             // Allocate and initialize the field
             len = dim.x * dim.y * dim.z;
-            field = new T[len];
+            // field = new T[len];
+            checkCudaErrors(cudaMallocManaged(&field, len * sizeof(T)));
             for (unsigned int i = 0; i < len; i++)
-                field[i] = initialValue;
+              field[i] = initialValue;
         }
 
         virtual ~Field3DImpl() {
             if (field) {
-                delete[] field;
+                // delete[] field;
+                checkCudaErrors(cudaFree(&field));
                 field = 0;
             }
 
@@ -64,7 +67,9 @@ namespace CompuCell3D {
         }
 
         virtual void resizeAndShift(const Dim3D theDim, Dim3D shiftVec = Dim3D()) {
-            T *field2 = new T[theDim.x * theDim.y * theDim.z];
+            // T *field2 = new T[theDim.x * theDim.y * theDim.z];
+            checkCudaErrors(cudaMallocManaged(&field2, theDim.x * theDim.y * theDim.z * sizeof(T)));
+
             //first initialize the lattice with initial value
             for (long int i = 0; i < theDim.x * theDim.y * theDim.z; ++i)
                 field2[i] = initialValue;
@@ -80,7 +85,8 @@ namespace CompuCell3D {
                         }
 
 
-            delete[]  field;
+            // delete[]  field;
+            checkCudaErrors(cudaFree(&field));
             field = field2;
             dim = theDim;
 

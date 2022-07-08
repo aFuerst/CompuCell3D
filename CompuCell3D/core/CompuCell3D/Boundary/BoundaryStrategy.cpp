@@ -11,8 +11,8 @@
 
 
 #include "BoundaryStrategy.h"
-//Field3DImpl.h includes boundary Strategy and for this reason has to be listed after #define EXP_STL
-#include <CompuCell3D/Field3D/Field3DImpl.h>
+//Field3DImpl.cuh includes boundary Strategy and for this reason has to be listed after #define EXP_STL
+#include <CompuCell3D/Field3D/Field3DImpl.cuh>
 
 #include "Boundary.h"
 #include "BoundaryFactory.h"

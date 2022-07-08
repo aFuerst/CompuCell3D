@@ -301,7 +301,7 @@ class BS{
 
 
 %include <CompuCell3D/Field3D/Field3D.h>
-%include <CompuCell3D/Field3D/Field3DImpl.h>
+%include <CompuCell3D/Field3D/Field3DImpl.cuh>
 
 %ignore CompuCell3D::Field3D<int>::typeStr;
 %ignore CompuCell3D::Field3DImpl<int>::typeStr;

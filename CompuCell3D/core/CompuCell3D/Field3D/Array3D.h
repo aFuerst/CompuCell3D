@@ -4,7 +4,7 @@
 #include <vector>
 #include <set>
 #include "Dim3D.h"
-#include "Field3DImpl.h"
+#include "Field3DImpl.cuh"
 #include <iostream>
 
 

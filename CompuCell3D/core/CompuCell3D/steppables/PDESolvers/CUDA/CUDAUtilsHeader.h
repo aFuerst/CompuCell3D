@@ -2,10 +2,9 @@
 #define CUDAUTILSHEADER_H
 
 #include <stdio.h>
+#include <cuda.h>
 
 //TODO: check if we can use ASSERT_OR_THROW here
-
-
 //#include <cutil_inline.h>
 #define checkCudaErrors(err)  __checkCudaErrors (err, __FILE__, __LINE__)
 

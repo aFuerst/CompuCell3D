@@ -3,7 +3,7 @@
 #include <CompuCell3D/Potts3D/Potts3D.h>
 #include <CompuCell3D/Potts3D/CellInventory.h>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
-#include <CompuCell3D/Field3D/Field3DImpl.h>
+#include <CompuCell3D/Field3D/Field3DImpl.cuh>
 #include <CompuCell3D/Field3D/Field3D.h>
 #include <CompuCell3D/Field3D/Field3DIO.h>
 #include <CompuCell3D/steppables/BoxWatcher/BoxWatcher.h>

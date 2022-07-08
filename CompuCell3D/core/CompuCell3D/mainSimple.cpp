@@ -21,7 +21,7 @@ using namespace std;
 
 
 ////the reason to declare BoundaryStrategy* BoundaryStrategy::singleton; here is because 
-////Simulator.h includes Potts.h which includes WatchableField3D.h which includes Field3Dimpl.h which includes BoundaryStrategy.h
+////Simulator.h includes Potts.h which includes WatchableField3D.h which includes Field3DImpl.cuh which includes BoundaryStrategy.h
 ////BoundaryStrategy* BoundaryStrategy::singleton;
 //
 //

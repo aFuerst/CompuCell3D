@@ -4,6 +4,7 @@
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <iostream>
 #include <exception>
+#include <stdexcept>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 using namespace std;
