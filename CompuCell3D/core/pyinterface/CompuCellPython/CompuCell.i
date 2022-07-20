@@ -61,7 +61,7 @@
 #include <CompuCell3D/Field3D/Neighbor.h>
 #include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include <CompuCell3D/Field3D/Field3D.h>
-#include <CompuCell3D/Field3D/Field3DImpl.h>
+#include <CompuCell3D/Field3D/Field3DImpl.cuh>
 #include <CompuCell3D/Field3D/WatchableField3D.h>
 #include <CompuCell3D/ClassRegistry.h>
 #include <CompuCell3D/CC3DEvents.h>
@@ -240,8 +240,8 @@ using namespace CompuCell3D;
 // %include <dolfin/mesh/Mesh.h>
 
 // we have to include files for objects that we will type-map before including definitions of corresponding typemaps
-%include "Field3D/Point3D.h"
-%include "Field3D/Dim3D.h"
+%include "CompuCell3D/Field3D/Point3D.h"
+%include "CompuCell3D/Field3D/Dim3D.h"
 
 %extend CompuCell3D::Point3D{
   std::string __str__(){
@@ -596,9 +596,9 @@ using namespace CompuCell3D;
 
 
 
-%include "Field3D/Field3D.h"
-%include "Field3D/Field3DImpl.h"
-%include "Field3D/WatchableField3D.h"
+%include "CompuCell3D/Field3D/Field3D.h"
+%include "CompuCell3D/Field3D/Field3DImpl.cuh"
+%include "CompuCell3D/Field3D/WatchableField3D.h"
 
 
 
@@ -1070,6 +1070,14 @@ FIELD3DEXTENDERBASE(type,returnType)
 %ignore Field3D<CellG*>::typeStr;
 %ignore Field3DImpl<CellG*>::typeStr;
 %ignore WatchableField3D<CellG*>::typeStr;
+
+// %ignore Field3D<float>;
+// %ignore Field3DImpl<float>;
+// %ignore Field3D<int>;
+// %ignore Field3DImpl<int>;
+// %ignore Field3D<CellG *>;
+// %ignore Field3DImpl<CellG *>;
+// %ignore WatchableField3D<CellG *>;
 
 %template(floatfield) Field3D<float>;
 %template(floatfieldImpl) Field3DImpl<float>;

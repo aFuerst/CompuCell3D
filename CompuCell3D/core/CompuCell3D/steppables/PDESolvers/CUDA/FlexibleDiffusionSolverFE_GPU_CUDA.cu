@@ -2,7 +2,7 @@
 #include "FlexibleDiffusionSolverFE_GPU_CUDA.h"
 #include "../DiffSecrData.h"
 
-#include "CUDAUtilsHeader.h"
+#include <CompuCell3D/CudaUtils.cuh>
 #include "../GPUSolverBasicData.h"
 #include <iostream>
 

@@ -8,8 +8,18 @@ MESSAGE(STATUS "CUDA headers found at " ${CUDA_INCLUDE_DIRS})
 MESSAGE(STATUS "CUDA library: " ${CUDA_LIBRARIES})
 MESSAGE(" CUDA NVCC exe " ${CUDA_NVCC_EXECUTABLE})
 
-INCLUDE_DIRECTORIES(${CUDA_TOOLKIT_INCLUDE})
-MESSAGE("CUDA_TOOLKIT_INCLUDE: " ${CUDA_NVCC_EXECUTABLE})
+set(
+    CUDA_NVCC_FLAGS
+    ${CUDA_NVCC_FLAGS};
+    -arch=sm_60
+    )
+
+FIND_PACKAGE(VTK REQUIRED)
+
+if (VTK_FOUND)
+  MESSAGE("VTK FOUND:" ${VTK_USE_FILE})
+  include(${VTK_USE_FILE})
+endif()
 
 SET(SRCS
    FieldStorage.cpp
@@ -38,11 +48,15 @@ if (${VTK_MAJOR_VERSION} EQUAL "5")
 endif()
 
 LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
+MESSAGE(" VTK LIB DIRS " ${VTK_LIBRARY_DIRS})
+MESSAGE(" VTK_CMAKE_DIR " ${VTK_CMAKE_DIR})
+
+# INCLUDE_DIRECTORIES("/extra/alfuerst/cc3d_2022/include/tbb/")
+# INCLUDE_DIRECTORIES("/extra/alfuerst/cc3d_2022/include/")
 
 SET(LIBS
     cc3d::CompuCellLib
     cc3d::NeighborTracker
-    cc3d::PublicUtilities
     ${PYTHON_LIBRARY_TO_LINK}
     ${VTK_LIBS}
 
@@ -63,12 +77,22 @@ else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 
+set_target_properties(FieldExtractor PROPERTIES CUDA_ARCHITECTURES "60")
+
+
+MESSAGE("BEFORE SECOND TARGET_INCLUDE_DIRECTORIES")
+MESSAGE("VTK_LIBRARIES:" ${VTK_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(FieldExtractor PUBLIC
-    ${VTK_INCLUDE_DIRS}
+    # ${VTK_INCLUDE_DIRS}
+    /extra/alfuerst/cc3d_2022/include/
+    # ${VTK_LIBRARIES}
+    ${CUDA_TOOLKIT_INCLUDE}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/pyinterface>
     $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core/pyinterface/PyPlugin>
 )
+
+MESSAGE("AFTER SECOND TARGET_INCLUDE_DIRECTORIES")
 target_link_libraries(FieldExtractor ${LIBS})
 
 install(TARGETS FieldExtractor 
@@ -112,9 +136,11 @@ SET_TARGET_PROPERTIES(PlayerPythonNew PROPERTIES
 
 target_include_directories(PlayerPythonNew PUBLIC
     ${PYTHON_DIRS_TO_INCLUDE}
-    ${VTK_INCLUDE_DIRS}
+    # ${VTK_INCLUDE_DIRS}
+    /extra/alfuerst/cc3d_2022/include/
     $<TARGET_PROPERTY:FieldExtractor,INCLUDE_DIRECTORIES>
 )
+MESSAGE("AFTER THIRD TARGET_INCLUDE_DIRECTORIES")
 
 SWIG_LINK_LIBRARIES(PlayerPythonNew ${LIBS_SWIG})
 target_link_directories(PlayerPythonNew PUBLIC ${Python_LIBRARY_DIRS})

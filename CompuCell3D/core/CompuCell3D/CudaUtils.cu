@@ -1,9 +1,11 @@
-#ifndef CUDAUTILS_H
-#define CUDAUTILS_H
-
+#include <CompuCell3D/CudaUtils.cuh>
 #include <stdio.h>
 #include <cuda.h>
-#define checkCudaErrors(err) __checkCudaErrors(err, __FILE__, __LINE__)
+#include <iostream>
+
+// #define checkCudaErrors(err) __checkCudaErrors(err, __FILE__, __LINE__)
+
+using namespace std;
 
 inline void __checkCudaErrors(cudaError err, const char *file, const int line)
 {
@@ -18,7 +20,7 @@ inline void __checkCudaErrors(cudaError err, const char *file, const int line)
   }
 }
 
-void __chooseCudaDevice() {
+void chooseCudaDevice() {
   // TODO: only call this once
   // Error or do nothing?
   cout << "Selecting the fastest GPU device...\n";
@@ -57,5 +59,3 @@ void __chooseCudaDevice() {
     checkCudaErrors(cudaSetDevice(device));
   }
 }
-
-#endif // CUDAUTILS_H

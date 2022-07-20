@@ -24,6 +24,7 @@
 #include "PottsTestData.h"
 
 #include "Potts3D.h"
+#include <cuda.h>
 
 using namespace CompuCell3D;
 using namespace std;
@@ -331,19 +332,21 @@ CellG *Potts3D::createCellG(const Point3D pt, long _clusterId) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CellG *Potts3D::createCell(long _clusterId) {
-    CellG *cell = new CellG();
-    cell->extraAttribPtr = cellFactoryGroup.create();
-    //always keep incrementing recently created  cell id
-    ++recentlyCreatedCellId;
-    cell->id = recentlyCreatedCellId;
+  CellG *cell = new CellG();
+  // checkCudaErrors(cudaMallocManaged(&cell, sizeof(CellG)));
+  // = new CellG();
+  cell->extraAttribPtr = cellFactoryGroup.create();
+  // always keep incrementing recently created  cell id
+  ++recentlyCreatedCellId;
+  cell->id = recentlyCreatedCellId;
 
+  // this means that cells with clusterId<=0 should be placed at the end of PIF file if
+  //  automatic numbering of clusters is to work for a mix of clustered and non-clustered cells
 
-    //this means that cells with clusterId<=0 should be placed at the end of PIF file if
-    // automatic numbering of clusters is to work for a mix of clustered and non-clustered cells
-
-    if (_clusterId <= 0) { //default behavior if user does not specify cluster id or cluster id is 0
-        ++recentlyCreatedClusterId;
-        cell->clusterId = recentlyCreatedClusterId;
+  if (_clusterId <= 0)
+  { // default behavior if user does not specify cluster id or cluster id is 0
+    ++recentlyCreatedClusterId;
+    cell->clusterId = recentlyCreatedClusterId;
 
 
     } else if (_clusterId >
@@ -380,12 +383,15 @@ CellG *Potts3D::createCellGSpecifiedIds(const Point3D pt, long _cellId, long _cl
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // this function should be only used from PIF Initializers or when you really understand the way CC3D assigns cell ids
 CellG *Potts3D::createCellSpecifiedIds(long _cellId, long _clusterId) {
-    CellG *cell = new CellG();
-    cell->extraAttribPtr = cellFactoryGroup.create();
+  CellG *cell = new CellG();
+  // checkCudaErrors(cudaMallocManaged(&cell, sizeof(CellG)));
 
-    if (_cellId > recentlyCreatedCellId) {
-        recentlyCreatedCellId = _cellId;
-        cell->id = recentlyCreatedCellId;
+  cell->extraAttribPtr = cellFactoryGroup.create();
+
+  if (_cellId > recentlyCreatedCellId)
+  {
+    recentlyCreatedCellId = _cellId;
+    cell->id = recentlyCreatedCellId;
     } else if (!cellInventory.attemptFetchingCellById(_cellId)) {
         // checking if cell id is available even if ids were used out of order
         cerr << "out of order cell id  is available" << endl;

@@ -63,6 +63,15 @@ namespace CompuCell3D {
         }
 
         /**
+         * @brief Get a pointer to the underlying data
+         * 
+         * ONLY USE FOR CUDA
+         * 
+         * @return T* 
+         */
+        virtual T* getPtr();
+
+        /**
          * Set a field element. If the value was already set it will be
          * overwritten.  If pt is out of range then a CC3DException will
          * be thrown.

@@ -33,8 +33,11 @@ namespace CompuCell3D {
         array.assign(_dim.x, vector < vector < T > > (_dim.y, vector<T>(_dim.z, val)));
     }
 
+    // Forward declaration
+    template <class T>
+    class Field3DImpl;
 
-//Adapter is necessary to keep current API of the Field3D . These fields are registered in Simulator and
+    // Adapter is necessary to keep current API of the Field3D . These fields are registered in Simulator and
     template<typename T>
     class Array3DField3DAdapter : public Field3DImpl<T> {
     public:

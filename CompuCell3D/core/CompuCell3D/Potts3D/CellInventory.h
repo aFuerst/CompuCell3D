@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <map>
+#include <algorithm>
 //NOTE: compartment inventory should be changed to cluster inventory to avoid name confusion
 #include "CellInventoryWatcher.h"
 

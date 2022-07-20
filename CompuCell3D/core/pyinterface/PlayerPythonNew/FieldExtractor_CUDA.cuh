@@ -2,6 +2,7 @@
 #define FIELDEXTRACTOR_CUDA
 
 #include <iostream>
+#include <CompuCell3D/Simulator.h>
 #include "FieldExtractorBase.h"
 #include "FieldExtractor.h"
 #include "FieldStorage.h"
@@ -9,6 +10,14 @@
 // #include <CompuCell3D/Potts3D/Cell.h>
 
 namespace CompuCell3D{
+
+  typedef struct FieldExtractParams {
+      int dim[3];
+      int pointOrderVec[3];
+      int dimOrderVec[3];
+      int pos;
+      CellG** cellField;
+  } FieldExtractParams_t;
 
 	//have to declare here all the classes that will be passed to this class from Python
 	class Potts3D;
@@ -77,14 +86,8 @@ namespace CompuCell3D{
 
   private:
     FieldStorage *fsPtr;
-    void alloc();
-
-    float* moveCellFieldToDevice(std::string _conFieldName);
-    float* moveConFieldToDevice(std::string _conFieldName);
-
-    // device
-    float *cell_field;
-    float *con_field;
+    void dimOrder(std::string _plane, int* order);
+    void pointOrder(std::string _plane, int* order);
   };
 };
 #endif // FIELDEXTRACTOR_CUDA

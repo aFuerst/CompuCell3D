@@ -6,6 +6,17 @@ ADD_SUBDIRECTORY(Boundary)
 ADD_SUBDIRECTORY(Potts3D)
 ADD_SUBDIRECTORY(plugins)
 ADD_SUBDIRECTORY(steppables)
+# ADD_SUBDIRECTORY(CudaUtils)
+
+FIND_PACKAGE(CUDA)
+FIND_PACKAGE(CUDAToolkit)
+INCLUDE(FindCUDA)
+
+set(
+    CUDA_NVCC_FLAGS
+    ${CUDA_NVCC_FLAGS};
+    -arch=sm_60
+    )
 
 SET(QtWrappersLibs )
 if(BUILD_QT_WRAPPERS)
@@ -31,11 +42,14 @@ SET(SRCS
   ParserStorage.cpp
   CC3DExceptions.cpp
   ExtraMembers.cpp
+  CudaUtils.cu
 )
 
 SET(INCLUDE_DIRS
     $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${COMPUCELL3D_INSTALL_INCLUDE_DIR}>
+    ${CUDA_TOOLKIT_INCLUDE}
+    /extra/alfuerst/cc3d_2022/include/
 )
 
 set(LIBS
@@ -45,6 +59,7 @@ set(LIBS
     cc3d::Boundary
     cc3d::Field3D
     cc3d::Potts3D
+    CUDA::cudart
 )
 
 if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
@@ -52,6 +67,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif()
 
 ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES ${LIBS} cc3d::XMLUtils ${QtWrappersLibs})
+
 
 TARGET_INCLUDE_DIRECTORIES(${CompuCellLibLib} PUBLIC ${INCLUDE_DIRS})
 

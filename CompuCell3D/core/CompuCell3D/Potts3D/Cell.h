@@ -4,7 +4,7 @@
 #include <vector>
 #include <CompuCell3D/DerivedProperty.h>
 #include <CompuCell3D/ExtraMembers.h>
-#include <CompuCell3D/CudaUtils/CudaManagedClass.cuh>
+// #include <CompuCell3D/CudaManagedClass.cuh>
 
 #ifndef PyObject_HEAD
 struct _object; //forward declare
@@ -17,7 +17,7 @@ namespace CompuCell3D {
      * A Potts3D cell.
      */
 
-    class CellG : CudaManaged {
+    class CellG { // : CudaManaged {
     public:
         typedef unsigned char CellType_t;
 
