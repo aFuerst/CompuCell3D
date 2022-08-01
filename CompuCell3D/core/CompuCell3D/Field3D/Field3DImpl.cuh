@@ -37,7 +37,7 @@ template<class T>
        * @param dim The field dimensions
        * @param initialValue The initial value of all data elements in the field.
        */
-    Field3DImpl(const Dim3D dim, const T &initialValue) {
+    Field3DImpl(const Dim3D dim, const T &initialValue): dim(dim), field(0), initialValue(initialValue) {
       if (dim.x == 0 && dim.y == 0 && dim.z == 0)
         throw CC3DException("Field3D cannot have a 0 dimension!!!");
 
@@ -58,7 +58,7 @@ template<class T>
       if (field)
       {
         // delete[] field;
-        checkCudaErrors(cudaFree(&field));
+        checkCudaErrors(cudaFree(field));
         field = 0;
       }
     }
@@ -92,7 +92,7 @@ template<class T>
     }
     virtual T operator[](const Point3D &pt) const override  { return get(pt); }
     virtual Dim3D getDim() const override {
-      return this->dim;
+      return dim;
     }
     virtual bool isValid(const Point3D &pt) const override{
       return (0 <= pt.x && pt.x < dim.x &&
@@ -101,6 +101,9 @@ template<class T>
     }
 
     virtual void setDim(const Dim3D theDim) override{
+      if (dim.x == 0 && dim.y == 0 && dim.z == 0)
+        throw CC3DException("Field3D cannot have a 0 dimension!!!");
+
       this->resizeAndShift(theDim);
     }
     virtual void resizeAndShift(const Dim3D theDim, const Dim3D shiftVec = Dim3D()) override{
@@ -124,7 +127,7 @@ template<class T>
             }
 
       // delete[]  field;
-      checkCudaErrors(cudaFree(&field));
+      checkCudaErrors(cudaFree(field));
       field = field2;
       dim = theDim;
 

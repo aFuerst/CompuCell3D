@@ -219,7 +219,9 @@ void FieldExtractor_CUDA::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellT
   checkCudaErrors(cudaMalloc((void**)&d_cellsType, cellsArraySize));
   checkCudaErrors(cudaMalloc((void**)&d_cellCoords, numPoints*2*4*sizeof(double)));
   FieldExtractParams_t* params_device;
-  checkCudaErrors(cudaHostGetDevicePointer((void **) &params_device, (void *)&params, 0));
+  // checkCudaErrors(cudaHostGetDevicePointer((void **) &params_device, (void *)&params, 0));
+  checkCudaErrors(cudaMalloc((void**)&params_device, sizeof(FieldExtractParams_t)));
+  checkCudaErrors(cudaMemcpy((void *)params_device, (void *)&params, sizeof(FieldExtractParams_t), cudaMemcpyHostToDevice));
 
   dim3 threads(16, 16, 16);
   dim3 grid(params.dim[0] / threads.x, params.dim[1] / threads.y);
