@@ -5,7 +5,8 @@ SET(SRCS
   Point3D.cpp
   Dim3D.cpp
   Field3D.cpp
-  Field3DImpl.cu
+  # Field3DImpl.cu
+  # Field3DImpl.cuh
   NeighborFinder.cpp
   WatchableField3D.cpp
 )
@@ -32,6 +33,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 else(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
    ADD_SHARED_LIBRARY(Field3D ${SRCS} LINK_LIBRARIES cuda ${CUDA_LIBRARIES})
 endif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
+
+set_target_properties(${Field3DLib} PROPERTIES CUDA_ARCHITECTURES "60")
 
 TARGET_INCLUDE_DIRECTORIES(${Field3DLib} PUBLIC
   $<BUILD_INTERFACE:${COMPUCELL3D_SOURCE_DIR}/core>

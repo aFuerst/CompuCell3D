@@ -1,3 +1,4 @@
+#include "BoundaryStrategy.h"
 
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <CompuCell3D/Field3D/Dim3D.h>
@@ -10,7 +11,6 @@
 #include <Utils/Coordinates3D.h>
 
 
-#include "BoundaryStrategy.h"
 //Field3DImpl.cuh includes boundary Strategy and for this reason has to be listed after #define EXP_STL
 #include <CompuCell3D/Field3D/Field3DImpl.cuh>
 

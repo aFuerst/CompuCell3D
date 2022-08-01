@@ -11,7 +11,7 @@
 #include <vtkType.h>
 // #include <CompuCell3D/steppables/PDESolvers/CUDA/CUDAUtilsHeader.h>
 #include <CompuCell3D/CudaUtils.cuh>
-#include <cuda.h>
+#include <cuda_runtime.h>
 #include "FieldStorage.h"
 
 using namespace std;
@@ -34,14 +34,14 @@ void FieldExtractor_CUDA::init(Simulator *_sim)
 
   cout << "Selecting the fastest GPU device...\n";
   int num_devices, device;
-  checkCudaErrors((cudaError_enum)cudaGetDeviceCount(&num_devices));
+  checkCudaErrors(cudaGetDeviceCount(&num_devices));
   if (num_devices > 1)
   {
     int max_multiprocessors = 0, max_device = 0;
     for (device = 0; device < num_devices; device++)
     {
       cudaDeviceProp properties;
-      checkCudaErrors((cudaError_enum)cudaGetDeviceProperties(&properties, device));
+      checkCudaErrors(cudaGetDeviceProperties(&properties, device));
       if (max_multiprocessors < properties.multiProcessorCount)
       {
         max_multiprocessors = properties.multiProcessorCount;
@@ -49,9 +49,9 @@ void FieldExtractor_CUDA::init(Simulator *_sim)
       }
     }
     cudaDeviceProp properties;
-    checkCudaErrors((cudaError_enum)cudaGetDeviceProperties(&properties, max_device));
+    checkCudaErrors(cudaGetDeviceProperties(&properties, max_device));
     cout << "GPU device " << max_device << " selected; GPU device name: " << properties.name << endl;
-    checkCudaErrors((cudaError_enum)cudaSetDevice(max_device));
+    checkCudaErrors(cudaSetDevice(max_device));
   }
   else
   {
@@ -65,7 +65,7 @@ void FieldExtractor_CUDA::init(Simulator *_sim)
     // cout << "  Memory Bus Width (bits): " << properties.memoryBusWidth << endl;
     // cout << "  Peak Memory Bandwidth (GB/s): " << 2.0*properties.memoryClockRate*(properties.memoryBusWidth/8)/1.0e6 << endl;
     // cout << "  Compute capability: " << properties.major << "." << properties.minor << endl;
-    checkCudaErrors((cudaError_enum)cudaSetDevice(device));
+    checkCudaErrors(cudaSetDevice(device));
   }
 }
 
@@ -81,7 +81,7 @@ FieldExtractor_CUDA::~FieldExtractor_CUDA(){
   cout << "deconstruct FieldExtractor_CUDA" << endl;
 }
 
-void pointOrder(std::string _plane, int* order){
+void FieldExtractor_CUDA::pointOrder(std::string _plane, int* order){
 	for (int i = 0; i <_plane.size(); ++i){
 		_plane[i]=tolower(_plane[i]);
 	}
@@ -104,7 +104,7 @@ void pointOrder(std::string _plane, int* order){
 		order[2] =1;            
 	}
 }
-void dimOrder(std::string _plane, int* order){
+void FieldExtractor_CUDA::dimOrder(std::string _plane, int* order){
 	for (int i = 0  ; i <_plane.size() ; ++i){
 		_plane[i]=tolower(_plane[i]);
 	}
@@ -215,11 +215,11 @@ void FieldExtractor_CUDA::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellT
   double* d_cellCoords;
   int numPoints = params.dim[0] * params.dim[1] * params.dim[2];
   size_t cellsArraySize = numPoints * sizeof(unsigned char);
-  checkCudaErrors((cudaError_enum)cudaMalloc((void**)&d_cellsArray, cellsArraySize*5));
-  checkCudaErrors((cudaError_enum)cudaMalloc((void**)&d_cellsType, cellsArraySize));
-  checkCudaErrors((cudaError_enum)cudaMalloc((void**)&d_cellCoords, numPoints*2*4*sizeof(double)));
+  checkCudaErrors(cudaMalloc((void**)&d_cellsArray, cellsArraySize*5));
+  checkCudaErrors(cudaMalloc((void**)&d_cellsType, cellsArraySize));
+  checkCudaErrors(cudaMalloc((void**)&d_cellCoords, numPoints*2*4*sizeof(double)));
   FieldExtractParams_t* params_device;
-  checkCudaErrors((cudaError_enum)cudaHostGetDevicePointer((void **) &params_device, (void *)&params, 0));
+  checkCudaErrors(cudaHostGetDevicePointer((void **) &params_device, (void *)&params, 0));
 
   dim3 threads(16, 16, 16);
   dim3 grid(params.dim[0] / threads.x, params.dim[1] / threads.y);
@@ -235,13 +235,13 @@ void FieldExtractor_CUDA::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellT
       {
 
         _cellsArrayWritePtr = _cellsArray->WritePointer(numPoints, numPoints*5);
-        checkCudaErrors((cudaError_enum)cudaMemcpy(d_cellsArray, _cellsArrayWritePtr, cellsArraySize, cudaMemcpyDeviceToHost));
+        checkCudaErrors(cudaMemcpy(d_cellsArray, _cellsArrayWritePtr, cellsArraySize, cudaMemcpyDeviceToHost));
       }
       #pragma omp section
       {
         _cellTypeArray->SetNumberOfValues(numPoints);
         h_cellsType = new int[cellsArraySize*5];
-        checkCudaErrors((cudaError_enum)cudaMemcpy(d_cellsType, h_cellsType, cellsArraySize*5, cudaMemcpyDeviceToHost));
+        checkCudaErrors(cudaMemcpy(d_cellsType, h_cellsType, cellsArraySize*5, cudaMemcpyDeviceToHost));
       }
       #pragma omp section
       {

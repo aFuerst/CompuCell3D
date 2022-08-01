@@ -1,10 +1,10 @@
 #ifndef FIELD3D_H
 #define FIELD3D_H
 
-
 // It would be better to hide the implementation (i.e. not include it here),
 // but createInstance needs it and because Field3D is templated 
 // createInstance must be in the header file.
+#include <CompuCell3D/Boundary/BoundaryStrategy.h>
 #include "Field3DImpl.cuh"
 #include "Point3D.h"
 #include "Dim3D.h"
@@ -19,7 +19,6 @@
 
 #include <CompuCell3D/CC3DExceptions.h>
 
-#include <CompuCell3D/Boundary/BoundaryStrategy.h>
 
 namespace CompuCell3D {
     // Forward declaration

@@ -8,6 +8,7 @@
 #include <CompuCell3D/Field3D/Point3D.h>
 #include <CompuCell3D/Field3D/Neighbor.h>
 #include <CompuCell3D/CC3DExceptions.h>
+// #include <CompuCell3D/Field3D/Field3DImpl.cuh>
 
 #include <vector>
 #include <iostream>
@@ -27,10 +28,6 @@ namespace CompuCell3D {
      * Each axis is assigned its own boundary strategy
      */
     //need to include it to avoid problems with "inclomplete types"
-    /*   template <typename Y>
-       class Field3DImpl;*/
-
-
     template<typename T>
     class Field3DImpl;
 

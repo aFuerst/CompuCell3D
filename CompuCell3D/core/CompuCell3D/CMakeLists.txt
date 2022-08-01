@@ -42,7 +42,7 @@ SET(SRCS
   ParserStorage.cpp
   CC3DExceptions.cpp
   ExtraMembers.cpp
-  CudaUtils.cu
+  # CudaUtils.cu
 )
 
 SET(INCLUDE_DIRS
@@ -67,7 +67,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 endif()
 
 ADD_SHARED_LIBRARY(CompuCellLib ${SRCS} LINK_LIBRARIES ${LIBS} cc3d::XMLUtils ${QtWrappersLibs})
-
+set_target_properties(${CompuCellLibLib} PROPERTIES CUDA_ARCHITECTURES "60")
 
 TARGET_INCLUDE_DIRECTORIES(${CompuCellLibLib} PUBLIC ${INCLUDE_DIRS})
 
