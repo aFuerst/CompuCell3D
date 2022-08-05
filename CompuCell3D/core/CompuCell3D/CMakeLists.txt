@@ -42,7 +42,7 @@ SET(SRCS
   ParserStorage.cpp
   CC3DExceptions.cpp
   ExtraMembers.cpp
-  # CudaUtils.cu
+  CudaUtils.cu
 )
 
 SET(INCLUDE_DIRS

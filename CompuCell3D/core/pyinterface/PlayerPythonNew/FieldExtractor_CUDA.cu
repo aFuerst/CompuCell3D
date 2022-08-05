@@ -13,6 +13,7 @@
 #include <CompuCell3D/CudaUtils.cuh>
 #include <cuda_runtime.h>
 #include "FieldStorage.h"
+#include <CompuCell3D/plugins/NeighborTracker/NeighborTrackerPlugin.h>
 
 using namespace std;
 using namespace CompuCell3D;
@@ -32,41 +33,7 @@ void FieldExtractor_CUDA::init(Simulator *_sim)
   potts = sim->getPotts();
   FieldExtractor::init(_sim);
 
-  cout << "Selecting the fastest GPU device...\n";
-  int num_devices, device;
-  checkCudaErrors(cudaGetDeviceCount(&num_devices));
-  if (num_devices > 1)
-  {
-    int max_multiprocessors = 0, max_device = 0;
-    for (device = 0; device < num_devices; device++)
-    {
-      cudaDeviceProp properties;
-      checkCudaErrors(cudaGetDeviceProperties(&properties, device));
-      if (max_multiprocessors < properties.multiProcessorCount)
-      {
-        max_multiprocessors = properties.multiProcessorCount;
-        max_device = device;
-      }
-    }
-    cudaDeviceProp properties;
-    checkCudaErrors(cudaGetDeviceProperties(&properties, max_device));
-    cout << "GPU device " << max_device << " selected; GPU device name: " << properties.name << endl;
-    checkCudaErrors(cudaSetDevice(max_device));
-  }
-  else
-  {
-    cout << "Only one GPU device available, will use it (#0)\n";
-    cudaDeviceProp properties;
-    int device = 0;
-    // checkCudaErrors(cudaGetDeviceProperties(&properties, device));
-    // cout << "GPU device name: " << properties.name << endl;
-    // cout << "Device Number: " << 0 << endl;
-    // cout << "  Memory Clock Rate (KHz): " << properties.memoryClockRate << endl;
-    // cout << "  Memory Bus Width (bits): " << properties.memoryBusWidth << endl;
-    // cout << "  Peak Memory Bandwidth (GB/s): " << 2.0*properties.memoryClockRate*(properties.memoryBusWidth/8)/1.0e6 << endl;
-    // cout << "  Compute capability: " << properties.major << "." << properties.minor << endl;
-    checkCudaErrors(cudaSetDevice(device));
-  }
+  chooseCudaDevice();
 }
 
 void FieldExtractor_CUDA::setFieldStorage(FieldStorage *_fsPtr)
@@ -139,7 +106,34 @@ unsigned int index_dev(int _x, int _y, int _z, int x_dim, int y_dim) {
   //start indexing from 0'th element but calculate index based on increased lattice dimmension
   return _x + (_y + _z * y_dim) * x_dim;
 }
-
+__host__ __device__
+    void
+    cartesianVertices(int idx, int *ptVec)
+{
+  switch (idx)
+  {
+    case 0:
+      ptVec[0] = 0.0;
+      ptVec[1] = 0.0;
+      ptVec[2] = 0.0;
+      break;
+    case 1:
+      ptVec[0] = 0.0;
+      ptVec[1] = 1.0;
+      ptVec[2] = 0.0;
+      break;
+    case 2:
+      ptVec[0] = 1.0;
+      ptVec[1] = 1.0;
+      ptVec[2] = 0.0;
+      break;
+    case 3:
+      ptVec[0] = 1.0;
+      ptVec[1] = 0.0;
+      ptVec[2] = 0.0;
+      break;
+  }
+}
 
 __global__
 void fillCellFieldData2DCartesian_gpu(int* cellsArray_out, int* cell_types_out, double* cellCoords_out, FieldExtractParams_t* params) {
@@ -156,13 +150,21 @@ void fillCellFieldData2DCartesian_gpu(int* cellsArray_out, int* cell_types_out, 
   int DIMY = params->dim[1];
   int DIMZ = params->dim[2];
 
-  int bz_max = DIMZ / 16;
-  int ptArr[3];
+  int bz_max = DIMZ / BLOCK_SIZE;
+  int cartesianVertex[3];
+  int ptVec[3];
 
   for (bz = 0; bz < bz_max; ++bz) {
-    int x = bx * 16 + tx;
-    int y = by * 16 + ty;
-    int z = bz * 16 + tz;
+    int x = bx * BLOCK_SIZE + tx;
+    int y = by * BLOCK_SIZE + ty;
+    // int z = bz * BLOCK_SIZE + tz;
+    ptVec[0] = x;
+    ptVec[1] = y;
+    ptVec[2] = params->pos;
+
+    x = ptVec[params->pointOrderVec[0]];
+    y = ptVec[params->pointOrderVec[1]];
+    int z = ptVec[params->pointOrderVec[2]];
 
     unsigned int idx = index_dev(x,y,z, params->dim[0], params->dim[1]);
 
@@ -170,12 +172,12 @@ void fillCellFieldData2DCartesian_gpu(int* cellsArray_out, int* cell_types_out, 
     cell_types_out[idx] = (int) cell->type;
 
     // Coordinates3D<double> coords(ptVec[0], ptVec[1], 0);
-    // for (int idx = 0; idx < 4; ++idx)
-    // {
-    //   Coordinates3D<double> cartesianVertex = cartesianVertices[idx];
-    //   data[idx*2] = cartesianVertex.x + ;
-    //   data[(idx*2) + 1] = cartesianVertex.y;
-    // }
+    for (int idx = 0; idx < 4; ++idx)
+    {
+      cartesianVertices(idx, cartesianVertex);
+      cellCoords_out[idx * 2] = cartesianVertex[0] + ptVec[0];
+      cellCoords_out[(idx * 2) + 1] = cartesianVertex[1] + ptVec[1];
+    }
 
     int arrPos = idx * 5;
     int cellPos = idx * 4;
@@ -214,61 +216,200 @@ void FieldExtractor_CUDA::fillCellFieldData2DCartesian(vtk_obj_addr_int_t _cellT
   int* d_cellsType;
   double* d_cellCoords;
   int numPoints = params.dim[0] * params.dim[1] * params.dim[2];
-  size_t cellsArraySize = numPoints * sizeof(unsigned char);
+  size_t cellsArraySize = numPoints * sizeof(int);
   checkCudaErrors(cudaMalloc((void**)&d_cellsArray, cellsArraySize*5));
-  checkCudaErrors(cudaMalloc((void**)&d_cellsType, cellsArraySize));
-  checkCudaErrors(cudaMalloc((void**)&d_cellCoords, numPoints*2*4*sizeof(double)));
+  checkCudaErrors(cudaMallocManaged((void**)&d_cellsType, cellsArraySize));
+  checkCudaErrors(cudaMallocManaged((void **)&d_cellCoords, numPoints * 2 * 4 * sizeof(double)));
   FieldExtractParams_t* params_device;
   // checkCudaErrors(cudaHostGetDevicePointer((void **) &params_device, (void *)&params, 0));
   checkCudaErrors(cudaMalloc((void**)&params_device, sizeof(FieldExtractParams_t)));
   checkCudaErrors(cudaMemcpy((void *)params_device, (void *)&params, sizeof(FieldExtractParams_t), cudaMemcpyHostToDevice));
 
-  dim3 threads(16, 16, 16);
+  dim3 threads(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
   dim3 grid(params.dim[0] / threads.x, params.dim[1] / threads.y);
 
   fillCellFieldData2DCartesian_gpu<<< grid, threads >>>(d_cellsArray, d_cellsType, d_cellCoords, params_device);
   vtkIdType *_cellsArrayWritePtr;
-  int* h_cellsType;
   #pragma omp parallel
   {
     #pragma omp sections
     {
       #pragma omp section
       {
-
         _cellsArrayWritePtr = _cellsArray->WritePointer(numPoints, numPoints*5);
-        checkCudaErrors(cudaMemcpy(d_cellsArray, _cellsArrayWritePtr, cellsArraySize, cudaMemcpyDeviceToHost));
+        checkCudaErrors(cudaMemcpy(_cellsArrayWritePtr, d_cellsArray, cellsArraySize, cudaMemcpyDeviceToHost));
       }
       #pragma omp section
       {
         _cellTypeArray->SetNumberOfValues(numPoints);
-        h_cellsType = new int[cellsArraySize*5];
-        checkCudaErrors(cudaMemcpy(d_cellsType, h_cellsType, cellsArraySize*5, cudaMemcpyDeviceToHost));
       }
       #pragma omp section
       {
         _pointsArray->SetNumberOfPoints(numPoints*4);
       }
+      #pragma omp section
+      {
+        cudaDeviceSynchronize();
+        cout << "post sync" << endl;
+      }
     }
-    #pragma omp once
-    cudaDeviceSynchronize();
-  
-    #pragma omp for schedule(static)
+
+#pragma omp for schedule(static)
     for (int j = 0; j < numPoints; ++j) {
       int cellPos = j*4;
 			for (int idx = 0; idx < 4; ++idx) {
-			  // Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords; 
- 			  // _pointsArray->SetPoint(cellPos + idx, cartesianVertex.x, cartesianVertex.y, 0.0);
-			}
-      _cellTypeArray->SetValue(j, h_cellsType[j]);
+			  // Coordinates3D<double> cartesianVertex=cartesianVertices[idx]+coords;
+        _pointsArray->SetPoint(cellPos + idx, d_cellCoords[(cellPos + idx)*2], d_cellCoords[(cellPos + idx)*2 +1], 0.0);
+      }
+      _cellTypeArray->SetValue(j, d_cellsType[j]);
     }
   }
+  cout << "post setting to VTK" << endl;
+
+  checkCudaErrors(cudaFree(d_cellsType));
+  checkCudaErrors(cudaFree(d_cellCoords));
 }
 
 void FieldExtractor_CUDA::fillBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
 {
   cout << "FieldExtractor_CUDA fillBorderData2D" << endl;
-  // FieldExtractor::fillBorderData2D(_pointArrayAddr, _linesArrayAddr, _plane, _pos);
+  vtkPoints *points = (vtkPoints *)_pointArrayAddr;
+  vtkCellArray *lines = (vtkCellArray *)_linesArrayAddr;
+
+  Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+  Dim3D fieldDim = cellFieldG->getDim();
+
+  vector<int> fieldDimVec(3, 0);
+  fieldDimVec[0] = fieldDim.x;
+  fieldDimVec[1] = fieldDim.y;
+  fieldDimVec[2] = fieldDim.z;
+
+  int pointOrderVec[3];
+  pointOrder(_plane, pointOrderVec);
+  int dimOrderVec[3];
+  dimOrder(_plane, dimOrderVec);
+
+  vector<int> dim(3, 0);
+  dim[0] = fieldDimVec[dimOrderVec[0]];
+  dim[1] = fieldDimVec[dimOrderVec[1]];
+  dim[2] = fieldDimVec[dimOrderVec[2]];
+
+  vector<std::tuple<double, double, double, double>> global_points;
+  vtkIdType *linesWritePtr;
+#pragma omp parallel shared(pointOrderVec, dim, cellFieldG, points, lines, global_points, linesWritePtr)
+  {
+    vector<std::tuple<double, double, double, double>> local_points;
+#pragma omp for schedule(static) nowait
+    for (int i = 0; i < dim[0]; ++i)
+    {
+      Point3D pt;
+      vector<int> ptVec(3, 0);
+      Point3D ptN;
+      vector<int> ptNVec(3, 0);
+
+      for (int j = 0; j < dim[1]; ++j)
+      {
+        ptVec[0] = i;
+        ptVec[1] = j;
+        ptVec[2] = _pos;
+
+        pt.x = ptVec[pointOrderVec[0]];
+        pt.y = ptVec[pointOrderVec[1]];
+        pt.z = ptVec[pointOrderVec[2]];
+
+        if (i > 0 && j < dim[1])
+        {
+          ptNVec[0] = i - 1;
+          ptNVec[1] = j;
+          ptNVec[2] = _pos;
+          ptN.x = ptNVec[pointOrderVec[0]];
+          ptN.y = ptNVec[pointOrderVec[1]];
+          ptN.z = ptNVec[pointOrderVec[2]];
+          if (cellFieldG->get(pt) != cellFieldG->get(ptN))
+          {
+            local_points.push_back(make_tuple<double, double>((double)i, (double)j, (double)i, (double)j + 1));
+            // local_points.push_back(std::pair<double, double>(i, j + 1));
+          }
+        }
+        if (j > 0 && i < dim[0])
+        {
+          ptNVec[0] = i;
+          ptNVec[1] = j - 1;
+          ptNVec[2] = _pos;
+          ptN.x = ptNVec[pointOrderVec[0]];
+          ptN.y = ptNVec[pointOrderVec[1]];
+          ptN.z = ptNVec[pointOrderVec[2]];
+          if (cellFieldG->get(pt) != cellFieldG->get(ptN))
+          {
+            local_points.push_back(make_tuple<double, double>((double)i, (double)j, (double)i + 1, (double)j));
+            // local_points.push_back(std::pair<double, double>(i + 1, j));
+          }
+        }
+
+        if (i < dim[0] && j < dim[1])
+        {
+          ptNVec[0] = i + 1;
+          ptNVec[1] = j;
+          ptNVec[2] = _pos;
+          ptN.x = ptNVec[pointOrderVec[0]];
+          ptN.y = ptNVec[pointOrderVec[1]];
+          ptN.z = ptNVec[pointOrderVec[2]];
+          if (cellFieldG->get(pt) != cellFieldG->get(ptN))
+          {
+            local_points.push_back(make_tuple<double, double>((double)i + 1, (double)j, (double)i + 1, (double)j + 1));
+            // local_points.push_back(std::pair<double, double>(i + 1, j + 1));
+          }
+        }
+
+        if (i < dim[0] && j < dim[1])
+        {
+          ptNVec[0] = i;
+          ptNVec[1] = j + 1;
+          ptNVec[2] = _pos;
+          ptN.x = ptNVec[pointOrderVec[0]];
+          ptN.y = ptNVec[pointOrderVec[1]];
+          ptN.z = ptNVec[pointOrderVec[2]];
+          if (cellFieldG->get(pt) != cellFieldG->get(ptN))
+          {
+            local_points.push_back(make_tuple<double, double>((double)i, (double)j + 1, (double)i + 1, (double)j + 1));
+            // local_points.push_back(std::pair<double, double>(i + 1, j + 1));
+          }
+        }
+      }
+    }
+#pragma omp critical
+    {
+      global_points.insert(global_points.end(), local_points.begin(), local_points.end());
+    }
+
+#pragma omp barrier
+
+#pragma omp sections
+    {
+#pragma omp section
+      {
+        linesWritePtr = lines->WritePointer(global_points.size(), global_points.size() * 3);
+      }
+#pragma omp section
+      {
+        points->SetNumberOfPoints(global_points.size() * 2);
+      }
+    }
+
+    int pc, pt_pos = 0;
+#pragma omp for schedule(static)
+    for (int j = 0; j < global_points.size(); ++j)
+    {
+      std::tuple<double, double, double, double> pt = global_points[j];
+      pt_pos = j * 2;
+      points->SetPoint(pt_pos, std::get<0>(pt), std::get<1>(pt), 0);
+      points->SetPoint(pt_pos + 1, std::get<2>(pt), std::get<3>(pt), 0);
+      pc = j * 3;
+      linesWritePtr[pc] = 2;
+      linesWritePtr[pc + 1] = pt_pos;
+      linesWritePtr[pc + 2] = pt_pos + 1;
+    }
+  }
 }
 
 void FieldExtractor_CUDA::fillClusterBorderData2D(vtk_obj_addr_int_t _pointArrayAddr, vtk_obj_addr_int_t _linesArrayAddr, std::string _plane, int _pos)
@@ -358,11 +499,151 @@ bool FieldExtractor_CUDA::fillScalarFieldData3D(vtk_obj_addr_int_t _conArrayAddr
 std::vector<int> FieldExtractor_CUDA::fillCellFieldData3D(vtk_obj_addr_int_t _cellTypeArrayAddr, vtk_obj_addr_int_t _cellIdArrayAddr, bool extractOuterShellOnly)
 {
   cout << "FieldExtractor_CUDA fillCellFieldData3D" << endl;
-  // auto ret = FieldExtractor::fillCellFieldData3D(_cellTypeArrayAddr, _cellIdArrayAddr, extractOuterShellOnly);
-  // cout << "DONE FieldExtractor_CUDA fillCellFieldData3D" << endl;
-  auto ret = std::vector<int>();
-  return ret;
+
+  vtkIntArray *cellTypeArray = (vtkIntArray *)_cellTypeArrayAddr;
+  vtkLongArray *cellIdArray = (vtkLongArray *)_cellIdArrayAddr;
+
+  Field3D<CellG *> *cellFieldG = potts->getCellFieldG();
+  Dim3D fieldDim = cellFieldG->getDim();
+
+  // if neighbor tracker is loaded we can figure out cell ids that touch medium (we call them outer cells) and render only those
+  // this way we do not waste time rendering inner cells that are not seen because they are covered by outer cells.
+  // this algorithm is not perfect but does significantly speed up 3D rendering
+
+  bool neighbor_tracker_loaded = Simulator::pluginManager.isLoaded("NeighborTracker");
+  // cout << "neighbor_tracker_loaded=" << neighbor_tracker_loaded << endl;
+  ExtraMembersGroupAccessor<NeighborTracker> *neighborTrackerAccessorPtr;
+  if (neighbor_tracker_loaded)
+  {
+    bool pluginAlreadyRegisteredFlag;
+    NeighborTrackerPlugin *nTrackerPlugin = (NeighborTrackerPlugin *)Simulator::pluginManager.get("NeighborTracker", &pluginAlreadyRegisteredFlag);
+    neighborTrackerAccessorPtr = nTrackerPlugin->getNeighborTrackerAccessorPtr();
+  }
+
+  std::unordered_set<long> outer_cell_ids_set;
+
+  // to optimize drawing individual cells in 3D we may use cell shell optimization where we draw only cells that make up a cell shell opf the volume and skip inner cells that are not visible
+  bool cellShellOnlyOptimization = neighbor_tracker_loaded && extractOuterShellOnly;
+
+  if (cellShellOnlyOptimization)
+  {
+
+    CellInventory::cellInventoryIterator cInvItr;
+    CellG *cell;
+    CellInventory &cellInventory = potts->getCellInventory();
+    // TODO: need OpenMP 3.0 > support on Windows to allow non-integer for loop indicies, cannot parallelize this
+    for (cInvItr = cellInventory.cellInventoryBegin(); cInvItr != cellInventory.cellInventoryEnd(); ++cInvItr)
+    {
+      cell = cellInventory.getCell(cInvItr);
+      std::set<NeighborSurfaceData> *neighborsPtr = &(neighborTrackerAccessorPtr->get(cell->extraAttribPtr)->cellNeighbors);
+      set<NeighborSurfaceData>::iterator sitr;
+      for (sitr = neighborsPtr->begin(); sitr != neighborsPtr->end(); ++sitr)
+      {
+        if (!sitr->neighborAddress)
+        {
+          outer_cell_ids_set.insert(cell->id);
+          break;
+        }
+      }
+    }
+  }
+
+  ParallelUtilsOpenMP *pUtils = sim->pUtils;
+  // todo - consider separate CPU setting for graphics
+  unsigned int num_work_nodes = pUtils->getNumberOfWorkNodes();
+  vector<unordered_set<int>> vecUsedCellTypes(num_work_nodes);
+
+#pragma omp parallel shared(vecUsedCellTypes, cellTypeArray, cellIdArray, fieldDim, outer_cell_ids_set, cellFieldG)
+  {
+#pragma omp sections
+    {
+#pragma omp section
+      {
+        cellTypeArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+      }
+#pragma omp section
+      {
+        cellIdArray->SetNumberOfValues((fieldDim.x + 2) * (fieldDim.y + 2) * (fieldDim.z + 2));
+      }
+    }
+
+    unsigned int currentWorkNodeNumber = pUtils->getCurrentWorkNodeNumber();
+    // when accessing cell field it is OK to go outside cellfieldG limits. In this case null pointer is returned
+#pragma omp for schedule(static)
+    for (int k = 0; k < fieldDim.z + 2; ++k)
+    {
+      Point3D pt;
+      CellG *cell;
+      int type;
+      long id;
+
+      int k_offset = k * (fieldDim.y + 2) * (fieldDim.x + 2);
+      for (int j = 0; j < fieldDim.y + 2; ++j)
+      {
+        int j_offset = j * (fieldDim.x + 2);
+        for (int i = 0; i < fieldDim.x + 2; ++i)
+        {
+          int offset = k_offset + j_offset + i;
+          if (i == 0 || i == fieldDim.x + 1 || j == 0 || j == fieldDim.y + 1 || k == 0 || k == fieldDim.z + 1)
+          {
+            cellTypeArray->SetValue(offset, 0);
+            cellIdArray->SetValue(offset, 0);
+          }
+          else
+          {
+            pt.x = i - 1;
+            pt.y = j - 1;
+            pt.z = k - 1;
+            cell = cellFieldG->get(pt);
+            if (!cell)
+            {
+              type = 0;
+              id = 0;
+            }
+            else
+            {
+              type = cell->type;
+              id = cell->id;
+
+              vecUsedCellTypes[currentWorkNodeNumber].insert(type);
+              //            if (usedCellTypes.find(type) == usedCellTypes.end())
+              //            {
+              //              #pragma omp critical
+              //              usedCellTypes.insert(type);
+              //            }
+            }
+            if (cellShellOnlyOptimization)
+            {
+              if (outer_cell_ids_set.find(id) != outer_cell_ids_set.end())
+              {
+                cellTypeArray->SetValue(offset, type);
+                cellIdArray->SetValue(offset, id);
+              }
+              else
+              {
+                cellTypeArray->SetValue(offset, 0);
+                cellIdArray->SetValue(offset, 0);
+              }
+            }
+            else
+            {
+              cellTypeArray->SetValue(offset, type);
+              cellIdArray->SetValue(offset, id);
+            }
+          }
+        }
+      }
+    }
+  } // omp_parallel
+
+  unordered_set<int> usedCellTypes;
+  for (auto s : vecUsedCellTypes)
+  {
+    usedCellTypes.insert(s.begin(), s.end());
+  }
+  return vector<int>(usedCellTypes.begin(), usedCellTypes.end());
 }
+
 bool FieldExtractor_CUDA::fillConFieldData3D(vtk_obj_addr_int_t _conArrayAddr, vtk_obj_addr_int_t _cellTypeArrayAddr, std::string _conFieldName, std::vector<int> *_typesInvisibeVec)
 {
   cout << "FieldExtractor_CUDA fillConFieldData3D" << endl;
